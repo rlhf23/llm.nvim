@@ -192,7 +192,7 @@ end
 
 local function display_error(error_message)
   vim.schedule(function()
-    local formatted_error = "ERROR: " .. error_message
+    local formatted_error = "\n```error\n" .. error_message .. "\n```"
     write_string_at_cursor(formatted_error)
   end)
 end
@@ -239,12 +239,14 @@ function M.prompt(opts)
     api_key_name = found_service.api_key_name
     model = found_service.model
   else
+    vim.api.nvim_command("normal! o")
     display_error("Invalid service: " .. service)
     return
   end
 
   local api_key = api_key_name and get_api_key(api_key_name)
   if not api_key then
+    vim.api.nvim_command("normal! o")
     display_error("API key not found: " .. api_key_name)
     return
   end
@@ -341,11 +343,15 @@ function M.prompt(opts)
         local error_msg = exit_codes[code] or "Curl error (code " .. code .. ")"
         display_error(error_msg)
         
-        -- Also display stderr if we have it
+        -- Also display stderr if we have it, but simplify the output
         if #stderr_output > 0 then
-          local stderr_msg = table.concat(stderr_output, "\n")
+          local stderr_msg = table.concat(stderr_output, " ")
           if #stderr_msg > 0 then
-            display_error("STDERR: " .. stderr_msg)
+            -- Extract just the most useful part of stderr (first line or main error)
+            local simplified_stderr = stderr_msg:match("curl:%s*%([%d]+%)%s*([^,]+)") or stderr_msg:match("^%s*(.-)%s*$")
+            if simplified_stderr and #simplified_stderr > 0 then
+              display_error(simplified_stderr)
+            end
           end
         end
       end

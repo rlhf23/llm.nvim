@@ -315,6 +315,11 @@ function M.prompt(opts)
     active_job = nil
   end
 
+<<<<<<< HEAD
+=======
+  local stderr_output = {}
+  
+>>>>>>> eb2e7f4 (errors)
   active_job = Job:new({
     command = "curl",
     args = args,
@@ -323,7 +328,11 @@ function M.prompt(opts)
     end,
     on_stderr = function(_, err)
       if err and #err > 0 then
+<<<<<<< HEAD
         display_error(err)
+=======
+        table.insert(stderr_output, err)
+>>>>>>> eb2e7f4 (errors)
       end
     end,
     on_exit = function(job, code)
@@ -338,7 +347,20 @@ function M.prompt(opts)
         }
         local error_msg = exit_codes[code] or "Curl error (code " .. code .. ")"
         display_error(error_msg)
+<<<<<<< HEAD
       end
+=======
+        
+        -- Also display stderr if we have it
+        if #stderr_output > 0 then
+          local stderr_msg = table.concat(stderr_output, "\n")
+          if #stderr_msg > 0 then
+            display_error("STDERR: " .. stderr_msg)
+          end
+        end
+      end
+      stderr_output = {}
+>>>>>>> eb2e7f4 (errors)
     end,
   })
 

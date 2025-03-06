@@ -6,7 +6,8 @@ describe('prompt_operatorfunc', function()
   before_each(function()
     -- Stub the required functions
     stub(vim.api, 'nvim_feedkeys')
-    stub(vim, 'go') -- This is a trick to handle vim.go table
+    -- Set up vim.go as a table with operatorfunc
+    vim.go = vim.go or {}
     vim.go.operatorfunc = ""
   end)
   

@@ -1,3 +1,4 @@
+local stub = require('luassert.stub')
 local mock_helpers = require('tests.unit.mock_helpers')
 
 describe('utility functions', function()

@@ -1,5 +1,6 @@
 -- Helper module for mocking nvim APIs in tests
 
+local stub = require('luassert.stub')
 local M = {}
 
 -- Mock for vim.api.nvim_get_current_buf

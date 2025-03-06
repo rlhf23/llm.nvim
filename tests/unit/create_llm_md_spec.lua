@@ -1,7 +1,9 @@
+local stub = require('luassert.stub')
 local mock_helpers = require('tests.unit.mock_helpers')
 
 describe('create_llm_md function', function()
   local llm = require('llm')
+  local mocks
   
   before_each(function()
     -- Set up mocks for the buffer and file operations

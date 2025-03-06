@@ -4,6 +4,7 @@ local mock_helpers = require('tests.unit.mock_helpers')
 describe('create_llm_md function', function()
   local llm = require('llm')
   local mocks
+  local get_current_buf_stub
   
   before_each(function()
     -- Set up mocks for the buffer and file operations
@@ -12,17 +13,21 @@ describe('create_llm_md function', function()
       cwd = "/test/cwd"
     })
     
-    -- Additional stub for set_option
+    -- Additional stubs
     stub(vim.api, 'nvim_buf_set_option')
     stub(vim.api, 'nvim_win_set_buf')
-    stub(vim.api, 'nvim_get_current_buf', function() return 5 end)
+    
+    -- Create a separate stub for get_current_buf that we'll override in tests
+    mocks.get_current_buf:revert() -- Remove the one from setup_buffer_mocks
+    get_current_buf_stub = stub(vim.api, 'nvim_get_current_buf')
+    get_current_buf_stub.returns(5)
   end)
   
   after_each(function()
     mock_helpers.teardown_mocks(mocks)
     vim.api.nvim_buf_set_option:revert()
     vim.api.nvim_win_set_buf:revert()
-    vim.api.nvim_get_current_buf:revert()
+    get_current_buf_stub:revert()
   end)
   
   it('should create and edit an llm.md file', function()
@@ -41,8 +46,8 @@ describe('create_llm_md function', function()
   
   it('should not edit if already in llm.md', function()
     -- Change the mocked buffer name to llm.md
-    vim.api.nvim_buf_get_name:revert()
-    stub(vim.api, 'nvim_buf_get_name', function() return "/test/cwd/llm.md" end)
+    mocks.buf_get_name:revert()
+    stub(vim.api, 'nvim_buf_get_name').returns("/test/cwd/llm.md")
     
     -- Call the function
     llm.create_llm_md()

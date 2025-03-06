@@ -58,11 +58,64 @@ function M.setup(opts)
   if opts.system_prompt_replace then
     system_prompt_replace = opts.system_prompt_replace
   end
-
   if opts.print_prompt then
     print_prompt = opts.print_prompt
   end
-  vim.api.nvim_create_user_command("LLM", M.create_llm_md, {})
+
+  -- Create commands
+  vim.api.nvim_create_user_command('LLMGroq', function(opts)
+    require('llm').prompt({
+      replace = opts.bang, -- true if command called with !
+      service = 'groq'
+    })
+  end, {
+    range = true,
+    bang = true, -- allows ! suffix
+    desc = "Send prompt to Groq LLM (!: replace mode)"
+  })
+
+  vim.api.nvim_create_user_command('LLMOpenAI', function(opts)
+    require('llm').prompt({
+      replace = opts.bang,
+      service = 'openai'
+    })
+  end, {
+    range = true,
+    bang = true,
+    desc = "Send prompt to OpenAI GPT-4 (!: replace mode)"
+  })
+
+  vim.api.nvim_create_user_command('LLMClaude', function(opts)
+    require('llm').prompt({
+      replace = opts.bang,
+      service = 'anthropic'
+    })
+  end, {
+    range = true,
+    bang = true,
+    desc = "Send prompt to Anthropic Claude (!: replace mode)"
+  })
+
+  -- Set default keymaps (unless disabled in opts)
+  if opts.set_keymaps ~= false then
+    -- Groq
+    vim.keymap.set("n", "<leader>,q", "<cmd>LLMGroq<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,q", "<cmd>LLMGroq<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,Q", "<cmd>LLMGroq!<cr>", { noremap = true, silent = true })
+
+    -- OpenAI
+    vim.keymap.set("n", "<leader>,a", "<cmd>LLMOpenAI<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,a", "<cmd>LLMOpenAI<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,A", "<cmd>LLMOpenAI!<cr>", { noremap = true, silent = true })
+
+    -- Claude
+    vim.keymap.set("n", "<leader>,,", "<cmd>LLMClaude<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,,", "<cmd>LLMClaude<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,.", "<cmd>LLMClaude!<cr>", { noremap = true, silent = true })
+  end
+
+  -- Create llm.md command
+  vim.api.nvim_create_user_command("LLM", M.create_llm_md, { desc = "Create llm.md file" })
 end
 
 local function get_buffer_path()
@@ -318,7 +371,7 @@ function M.prompt(opts)
   end
 
   local stderr_output = {}
-  
+
   active_job = Job:new({
     command = "curl",
     args = args,
@@ -342,7 +395,7 @@ function M.prompt(opts)
         }
         local error_msg = exit_codes[code] or "Curl error (code " .. code .. ")"
         display_error(error_msg)
-        
+
         -- Also display stderr if we have it, but simplify the output
         if #stderr_output > 0 then
           local stderr_msg = table.concat(stderr_output, " ")

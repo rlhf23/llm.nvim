@@ -21,6 +21,11 @@ local service_lookup = {
     model = "claude-3-7-sonnet-latest",
     api_key_name = "ANTHROPIC_API_KEY",
   },
+  ollama = {
+    url = "http://localhost:11434/v1/chat/completions",
+    model = "llama3.1",
+    api_key_name = "OLLAMA_API_KEY",  -- Typically not needed for local Ollama
+  },
 }
 
 local system_prompt = [[
@@ -36,8 +41,14 @@ Key capabilities:
 - Think step by step
 ]]
 
-local system_prompt_replace =
-"Follow the instructions in the code comments. Generate code only. Think step by step. If you must speak, do so in comments. Generate valid code only."
+local system_prompt_replace = [[
+You should replace the code that you are sent, only following the comments. 
+Do not talk at all. Only output valid code. Do not provide any backticks that surround the code. 
+Never ever output backticks like this ```. 
+Any comment that is asking you for something should be removed after you satisfy them. 
+Other comments should left alone. Do not output backticks
+]]
+
 
 local print_prompt = false
 
@@ -96,6 +107,17 @@ function M.setup(opts)
     desc = "Send prompt to Anthropic Claude (!: replace mode)"
   })
 
+  vim.api.nvim_create_user_command('LLMOllama', function(opts)
+    require('llm').prompt({
+      replace = opts.bang,
+      service = 'ollama'
+    })
+  end, {
+    range = true,
+    bang = true,
+    desc = "Send prompt to local Ollama (!: replace mode)"
+  })
+
   -- Set default keymaps (unless disabled in opts)
   if opts.set_keymaps ~= false then
     -- Groq
@@ -112,6 +134,11 @@ function M.setup(opts)
     vim.keymap.set("n", "<leader>,,", "<cmd>LLMClaude<cr>", { noremap = true, silent = true })
     vim.keymap.set("v", "<leader>,,", "<cmd>LLMClaude<cr>", { noremap = true, silent = true })
     vim.keymap.set("v", "<leader>,.", "<cmd>LLMClaude!<cr>", { noremap = true, silent = true })
+
+    -- Ollama
+    vim.keymap.set("n", "<leader>,o", "<cmd>LLMOllama<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,o", "<cmd>LLMOllama<cr>", { noremap = true, silent = true })
+    vim.keymap.set("v", "<leader>,O", "<cmd>LLMOllama!<cr>", { noremap = true, silent = true })
   end
 
   -- Create llm.md command

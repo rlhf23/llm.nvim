@@ -24,7 +24,7 @@ local service_lookup = {
   ollama = {
     url = "http://localhost:11434/v1/chat/completions",
     model = "llama3.1",
-    api_key_name = "OLLAMA_API_KEY",  -- Typically not needed for local Ollama
+    api_key_name = "llama_key",  -- Typically not needed for local Ollama
   },
 }
 
@@ -324,11 +324,15 @@ function M.prompt(opts)
     return
   end
 
-  local api_key = api_key_name and get_api_key(api_key_name)
-  if not api_key then
-    vim.api.nvim_command("normal! o")
-    display_error("API key not found: " .. api_key_name)
-    return
+  -- Skip API key check for Ollama as it's not required for local instances
+  local api_key = nil
+  if service ~= "ollama" then
+    api_key = api_key_name and get_api_key(api_key_name)
+    if not api_key then
+      vim.api.nvim_command("normal! o")
+      display_error("API key not found: " .. api_key_name)
+      return
+    end
   end
 
   local data

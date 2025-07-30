@@ -13,7 +13,7 @@ Before using the plugin, set any of `GROQ_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC
 lazy.nvim
 ```lua
 {
-    "melbaldove/llm.nvim",
+    "rlhf23/llm.nvim",
     dependencies = { "nvim-neotest/nvim-nio" }
 }
 ```
@@ -44,6 +44,11 @@ require('llm').setup({
         --     url = "https://api.anthropic.com/v1/messages",
         --     model = "claude-3-5-sonnet-20240620",
         --     api_key_name = "ANTHROPIC_API_KEY",
+        -- },
+        -- ollama = {
+        --     url = "http://localhost:11434/v1/chat/completions",
+        --     model = "llama3.1",
+        --     api_key_name = "llama_key",  -- Typically not needed for local Ollama
         -- },
 
         -- Extra OpenAI-compatible services to add (optional)
